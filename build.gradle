@@ -18,6 +18,12 @@ android {
         }
     }
 }
+tasks.withType(JavaCompile){
+
+//    options.encoding = "UTF-8"
+    options.encoding = "GBK"
+
+}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

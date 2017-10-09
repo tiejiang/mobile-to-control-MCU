@@ -15,6 +15,8 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.tiejiang.stairsrobot.myapplication.factory.InstanceFactory;
+
 import java.util.Random;
 
 /**
@@ -40,6 +42,9 @@ public class ControlView extends SurfaceView implements SurfaceHolder.Callback{
     private Resources mResources = getResources();
     private Bitmap mBitmap, backgroundBitmap;
     private boolean beginDrawing = false;
+    private byte[] commandByte = {0x00, 0x0D, 0x0A};
+
+//    private RelayControl mRelayControlInstance = InstanceFactory.mRelayControl;
 
     public ControlView(Context context){
         super(context);
@@ -69,7 +74,6 @@ public class ControlView extends SurfaceView implements SurfaceHolder.Callback{
         paint.setAntiAlias(true);
         //设置画笔颜色
         paint.setColor(paintColor);
-
     }
 
     @Override
@@ -91,11 +95,9 @@ public class ControlView extends SurfaceView implements SurfaceHolder.Callback{
 
         mBitmap = BitmapFactory.decodeResource(mResources, R.drawable.control_point);
         radius = mBitmap.getHeight()/2;
-
         cx = screenW/2 - radius;
         cy = screenH/2 - radius;
         Log.d("TIEJIANG", "surfaceChanged---radius= " + radius + ", cx= " + cx + ", cy= " + cy);
-
     }
 
 
@@ -147,7 +149,7 @@ public class ControlView extends SurfaceView implements SurfaceHolder.Callback{
     /**
      * return 1:forward; 2 back; 3 turn left; 4 turn right; 0 origin point
      * */
-    public int directionControl(float x, float y){
+    public void directionControl(float x, float y){
 
         float circlePointX = screenW/2 - radius;
         float circlePointY = screenH/2 - radius;
@@ -166,20 +168,27 @@ public class ControlView extends SurfaceView implements SurfaceHolder.Callback{
         // 注意去掉等号部分,等号部分在原点--初始位置
         if (equationOne > 0 && equationTwo > 0){  //"前进区域"
             Log.d("TIEJIANG", "forward");
-            return 1 ;
+            commandByte[0] = 'A';
         } else if (equationOne < 0 && equationTwo < 0){  // "后退区域"
             Log.d("TIEJIANG", "back");
-            return 2;
+            commandByte[0] = 'B';
         } else if(equationOne < 0 && equationTwo > 0){    //"左转区域"
             Log.d("TIEJIANG", "turn left");
-            return 3;
+            commandByte[0] = 'C';
         } else if (equationOne > 0 && equationTwo < 0){    //"右转区域"
             Log.d("TIEJIANG", "turn right");
-            return 4;
+            commandByte[0] = 'D';
         } else{
 //            Log.d("TIEJIANG", "origin point");
-            return 0;
         }
+//        Log.d("TIEJIANG", "ControlView---directionControl"+" mRelayControlInstance= "+InstanceFactory.mRelayControl);
+        if (commandByte[0] != 0x00){
+            InstanceFactory.mRelayControl.sendCommand(commandByte);
+            commandByte[0] = 0x00;
+        }
+
+//        mRelayControlInstance.sendMessage("i want data call back \r\n");
+
     }
 
     /*备注2：切记，在自定SurfaceView中定义的myDraw方法，自定义View（继承自View的子类）中的onDraw方法
@@ -201,12 +210,12 @@ public class ControlView extends SurfaceView implements SurfaceHolder.Callback{
             //随机设置画笔颜色
 //        setPaintRandomColor();
         }catch (NullPointerException e){
-            Log.d("TIEJIANG", "NuLLPointerException");
+            Log.d("TIEJIANG", "ControlView---myDraw---NuLLPointerException");
         }
-
-
-        //将画好的画布提交
-        sfh.unlockCanvasAndPost(canvas);
+        if (canvas != null){
+            //将画好的画布提交
+            sfh.unlockCanvasAndPost(canvas);
+        }
     }
 
     //为画笔设置随机颜色
