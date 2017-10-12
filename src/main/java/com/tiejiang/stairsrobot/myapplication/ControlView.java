@@ -155,6 +155,12 @@ public class ControlView extends SurfaceView implements SurfaceHolder.Callback{
         float circlePointY = screenH/2 - radius;
         float equationOne = 0; //(x,y)和方程1比较的值
         float equationTwo = 0;//(x,y)和方程2比较的值
+        byte forward = 0x01;
+        byte back = 0x02;
+        byte turn_left = 0x03;
+        byte turn_right = 0x04;
+//        byte speed_up = 0x05;
+//        byte speed_down = 0x06;
         /**
          * 构建方程
          * 方程1: y = (circlePointY)/(circlePointX) * x
@@ -168,16 +174,16 @@ public class ControlView extends SurfaceView implements SurfaceHolder.Callback{
         // 注意去掉等号部分,等号部分在原点--初始位置
         if (equationOne > 0 && equationTwo > 0){  //"前进区域"
             Log.d("TIEJIANG", "forward");
-            commandByte[0] = 'A';
+            commandByte[0] = forward;
         } else if (equationOne < 0 && equationTwo < 0){  // "后退区域"
             Log.d("TIEJIANG", "back");
-            commandByte[0] = 'B';
+            commandByte[0] = back;
         } else if(equationOne < 0 && equationTwo > 0){    //"左转区域"
             Log.d("TIEJIANG", "turn left");
-            commandByte[0] = 'C';
+            commandByte[0] = turn_left;
         } else if (equationOne > 0 && equationTwo < 0){    //"右转区域"
             Log.d("TIEJIANG", "turn right");
-            commandByte[0] = 'D';
+            commandByte[0] = turn_right;
         } else{
 //            Log.d("TIEJIANG", "origin point");
         }
@@ -191,12 +197,6 @@ public class ControlView extends SurfaceView implements SurfaceHolder.Callback{
 
     }
 
-    /*备注2：切记，在自定SurfaceView中定义的myDraw方法，自定义View（继承自View的子类）中的onDraw方法
-         * 完全是两码事：
-         * 1）自定义View（继承自View的子类）中的onDraw方法是重写父类的onDraw方法，在调用postInvalidate后会自动回调该onDraw()方法。
-         * 2）此处的myDraw方法需要手动调用，所以此处故意将方法命名为myDraw，突出为该方法是自己写的，非重写父类的方法 。
-         *
-         */
     //重写onDraw方法实现绘图操作
     protected void myDraw() {
         //获取canvas实例

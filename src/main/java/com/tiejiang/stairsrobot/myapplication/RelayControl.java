@@ -23,13 +23,15 @@ public class RelayControl extends Activity{
 
 	public ControlView mControlView;
 	public static boolean isRecording = false;// 线程控制标记
-	private Button releaseCtrl,btBack;
+	private Button releaseCtrl,btBack, speedUp, speedDown;
 	private OutputStream outStream = null;
 	private EditText _txtRead;
 	private ConnectedThread manageThread;
 	private Handler mHandler;
 	private String  encodeType ="GBK";
 //	private String  encodeType ="UTF-8";
+	private byte[] commandByte = {0x00, 0x0D, 0x0A};
+
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -55,12 +57,39 @@ public class RelayControl extends Activity{
 		releaseCtrl=(Button)findViewById(R.id.button1);
 		btBack=(Button) findViewById(R.id.button2);
 		_txtRead = (EditText) findViewById(R.id.etShow);
+		speedUp = (Button)findViewById(R.id.speed_up);
+		speedDown = (Button)findViewById(R.id.speed_down);
 	}
 
 	private void setMyViewListener() {
 
+		final byte speed_up = 0x05;
+		final byte speed_down = 0x06;
 		releaseCtrl.setOnClickListener(new ClickEvent());
 		btBack.setOnClickListener(new ClickEvent());
+
+		speedUp.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Log.d("TIEJIANG", "RelayControl---setMyViewListrner"+" speed up");
+				commandByte[0] = speed_up;
+				if (commandByte[0] != 0x00){
+					sendCommand(commandByte);
+					commandByte[0] = 0x00;
+				}
+			}
+		});
+		speedDown.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Log.d("TIEJIANG", "RelayControl---setMyViewListrner"+" speed down");
+				commandByte[0] = speed_down;
+				if (commandByte[0] != 0x00){
+					sendCommand(commandByte);
+					commandByte[0] = 0x00;
+				}
+			}
+		});
 	}
 
 	@Override
@@ -229,7 +258,7 @@ public class RelayControl extends Activity{
 					String info = (String) msg.obj;
 					_txtRead.append(info);
 					Log.d("TIEJIANG", "RelayControl---MyHandler info= "+info);
-					AnalyzeData(info);
+//					AnalyzeData(info);
 					break;
 
 				default:
